@@ -1,0 +1,155 @@
+# Pokemon Classes
+from email.mime import base
+import math
+import os
+import sys
+import string
+
+os.chdir("/Users/jaevionvargas/Desktop/Coding Projects/Pokemon Game")
+
+
+class Pokemon:
+    def __init__(self, name, nickname, type1, type2, level, nature, IVs, EVs, base_stats, moveset):
+        self.name = name
+        self.nickname = nickname
+        self.type1 = type1
+        self.type2 = type2
+        self.level = level
+        self.nature = nature
+        self.IVs = IVs
+        self.EVs = EVs
+        self.base_stats = base_stats
+        self.moveset = moveset
+        self.ability = ''
+
+    def nature_modifications(self):
+        nature = self.nature
+        nature_file = open("nature_dictionary.txt", 'r', encoding='utf-8')
+        nature_dictionary = dict()
+        for line in nature_file:
+            line = line.split(',')
+            line[1] = line[1].split('-')
+            line[1] = [float(i) for i in line[1]]
+            nature_dictionary[line[0]] = line[1]
+
+        stat_mods = nature_dictionary[nature]
+        return stat_mods
+
+    def __get_HP(self):
+        base_HP = self.base_stats[0]
+        true_hp = math.floor(0.01 * ((2 * base_HP) + self.IVs[0] + math.floor(
+            (0.25 * self.EVs[0]))) * self.level) + self.level + 10
+        return true_hp
+
+    def __get_attack(self):
+        base_attack = self.base_stats[1]
+        true_attack = (math.floor(.01*(2*base_attack +
+                                       self.IVs[1]+math.floor(.25*self.EVs[1]))*self.level+5))*(self.nature_modifications())[0]
+        return true_attack
+
+    def __get_defense(self):
+        base_defense = self.base_stats[2]
+        true_defense = (math.floor(.01*(2*base_defense +
+                                        self.IVs[2]+math.floor(.25*self.EVs[2]))*self.level+5))*(self.nature_modifications())[1]
+        return true_defense
+
+    def __get_special_attack(self):
+        base_special_attack = self.base_stats[3]
+        true_special_attack = (math.floor(.01*(2*base_special_attack +
+                                               self.IVs[3]+math.floor(.25*self.EVs[3]))*self.level+5))*(self.nature_modifications())[2]
+        return true_special_attack
+
+    def __get_special_defense(self):
+        base_special_defense = self.base_stats[4]
+        true_special_defense = (
+            math.floor(.01*(2*base_special_defense + self.IVs[4]+math.floor(.25*self.EVs[4]))*self.level+5))*(self.nature_modifications())[3]
+        return true_special_defense
+
+    def __get_speed(self):
+        base_speed = self.base_stats[5]
+        true_speed = (
+            math.floor(.01*(2*base_speed + self.IVs[5]+math.floor(.25*self.EVs[5]))*self.level+5))*(self.nature_modifications())[4]
+        return true_speed
+
+    def show_summary(self):
+        print(" %s\n %s nature\n HP: %d\n Attack: %d\n Defense: %d\n Sp. Atk: %d\n Sp.Def: %d\n Speed: %d\n" % (self.name, self.nature, self.__get_HP(
+        ), self.__get_attack(), self.__get_defense(), self.__get_special_attack(), self.__get_special_defense(), self.__get_speed()))
+
+
+class Move:
+    def __init__(self, type, attack_type, power, accuracy, effect):
+        self.type = type
+        self.attack_type = attack_type
+        self.power = power
+        self.accuracy = accuracy
+        self.effect = effect
+
+    def display(self):
+        print(" Type: {t}\n Attack Type: {at}\n Power: {p}\n Accuracy: {a}\n Effect: {e}".format(
+            t=self.type, at=self.attack_type, p=self.power, a=self.accuracy, e=self.effect))
+
+    def use(target):
+        pass
+
+
+def createPokemonDictionary(pokemon_file):
+    poke_dict = dict()
+    poke_file = open(pokemon_file, 'r')
+    egg_moves = []
+    for line in poke_file:
+        if line[0] == "N":
+            name = line[5:].strip()
+            print(name)
+            poke_file.readline()
+            type1 = next(poke_file)
+            type1 = type1[6:].strip()
+            print(type1)
+            check = next(poke_file)
+            if (check[0] == "T"):
+                type2 = check[6:].strip()
+                print(type2)
+            else:
+                poke_file.readline()
+                type2 = "NULL"
+                print(type2)
+            pre_basestats = next(poke_file)[10:]
+            pre_basestats.strip('\n')
+            pre_basestats = pre_basestats.split(',')
+            basestats = [int(x) for x in pre_basestats]
+            print(basestats)
+            i = 0
+            while i < 6:
+                poke_file.readline()
+                i += 1
+            abilities_list = []
+            abilities_list.append(next(poke_file)[10:].strip())
+            abilities_list.append(next(poke_file)[14:].strip())
+            print(abilities_list)
+            pre_all_moves = next(poke_file)[8:].strip().split(',')
+            all_moves = []
+            for x in pre_all_moves:
+                if x.isdigit() == False:
+                    all_moves.append(x)
+            check = next(poke_file)[0]
+            if check == 'E':
+                egg_moves.clear()
+                egg_moves.append(check[9:].strip())
+                print(egg_moves)
+                print()
+                for x in egg_moves:
+                    all_moves.append(x)
+            print()
+            print(all_moves)
+            poke_dict[name] = [type1, type2,
+                               basestats, abilities_list, all_moves]
+            print('--------------------------------')
+    poke_file.close()
+
+
+Jirachi = Pokemon("Jirachi", "Jirachi", "Steel", "Psychic", 100, "Jolly", [31, 31, 31, 31, 31, 31], [
+    8, 255, 0, 0, 0, 255], [100, 100, 100, 100, 100, 100], ["Iron Head", "L", "L", "L"])
+Jirachi.show_summary()
+
+
+test = createPokemonDictionary('pokemon.txt')
+print(test)
